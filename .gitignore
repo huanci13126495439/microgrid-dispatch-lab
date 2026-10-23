@@ -1,0 +1,22 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+.venv/
+build/
+dist/
+outputs/
+*.log
+.DS_Store
+
+# Local secrets and private material (not a substitute for a release-file review)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+private/
+local_data/
+# Private verification reports must remain outside this candidate.

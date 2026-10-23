@@ -1,0 +1,11 @@
+{
+  "capacity_kwh": 12000.0,
+  "min_soc_kwh": 1200.0,
+  "max_soc_kwh": 10800.0,
+  "initial_soc_kwh": 6000.0,
+  "terminal_soc_kwh": 6000.0,
+  "max_power_kw": 5000.0,
+  "charge_efficiency": 0.90,
+  "discharge_efficiency": 0.90,
+  "interval_minutes": 10
+}
