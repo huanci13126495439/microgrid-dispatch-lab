@@ -143,6 +143,7 @@ def test_cli_rejects_duplicate_csv_headers(tmp_path):
         ("[]", "must be a JSON object"),
         ('{"unknown_parameter": 1}', "Unknown battery config parameter"),
         ('{"max_power_kw": "high"}', "must be numeric"),
+        ('{"max_power_kw": NaN}', "must be finite"),
         ("{not-json}", "must be valid JSON"),
     ],
 )
