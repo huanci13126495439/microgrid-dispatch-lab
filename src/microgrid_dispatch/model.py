@@ -24,6 +24,13 @@ class Battery:
     interval_minutes: int = 10
 
     def validate(self) -> None:
+        numeric_parameters = (
+            self.capacity_kwh, self.min_soc_kwh, self.max_soc_kwh,
+            self.initial_soc_kwh, self.terminal_soc_kwh, self.max_power_kw,
+            self.charge_efficiency, self.discharge_efficiency, self.interval_minutes,
+        )
+        if not all(np.isfinite(value) for value in numeric_parameters):
+            raise ValueError("Battery parameters must be finite")
         if not (0 <= self.min_soc_kwh < self.max_soc_kwh <= self.capacity_kwh):
             raise ValueError("Require 0 <= min SOC < max SOC <= capacity")
         if not (self.min_soc_kwh <= self.initial_soc_kwh <= self.max_soc_kwh):
@@ -83,8 +90,8 @@ def optimize_day(load_kwh, pv_kwh, price_per_kwh, battery: Battery = Battery(),
     """
     battery.validate()
     load, pv, price = _input_arrays(load_kwh, pv_kwh, price_per_kwh)
-    if time_limit_s <= 0:
-        raise ValueError("time_limit_s must be > 0")
+    if not np.isfinite(time_limit_s) or time_limit_s <= 0:
+        raise ValueError("time_limit_s must be finite and > 0")
     n = len(load)
     step_capacity = battery.max_power_kw * battery.interval_minutes / 60.0
     # Variable blocks: purchases, charge, discharge, curtailment, SOC, binary mode.
