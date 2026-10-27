@@ -1,10 +1,9 @@
-# Microgrid Dispatch Lab v0.1 — public release candidate
+# Microgrid Dispatch Lab v0.1.0 — public release
 
 An educational, single-day microgrid battery scheduling demonstrator using
-SciPy/HiGHS mixed-integer linear programming. This is an unpublished review
-candidate maintained by Xie Sentao. The author confirms this is an individually
-completed project with no teammates or coauthors. The candidate is licensed under
-MIT; it has not been uploaded or publicly released.
+SciPy/HiGHS mixed-integer linear programming. This project was completed
+individually by Xie Sentao, without teammates or coauthors, and is publicly
+released under the MIT License.
 
 ## Quick start
 
@@ -56,30 +55,29 @@ No private-study reproduction claim is made.
 
 ## Personal project background and AI assistance
 
-Xie Sentao states that the underlying mathematical modeling work was completed
-individually, with no teammates or coauthors, as a competition result. Earlier
-descriptions of collaborative research and teammate consent were inaccurate.
-The Python model adapts the author's private research formulation and program
-structure into a small configurable teaching tool; it is not presented as an
-implementation developed independently of that research.
+The author completed this project individually as a competition entry, without
+teammates or coauthors. The Python model adapts the author's private research
+formulation and program structure into a small configurable teaching tool; it is
+not presented as an implementation developed independently of that research.
 
 AI-assisted development and documentation review were used. Complete line-level
 generation records, tool/version history and applicable terms are not available
 for every file; those gaps remain explicit. Testing does not determine copyright
 ownership or establish the originality of every generated expression.
 
-The review traced the original 15 candidate files to the local application,
-examined the relevant private solver without including it, and checked source
-imports, notices and synthetic-data generation. No embedded third-party source
-or explicit conflicting license was identified in that scope. This is a bounded
-source review, not proof against every possible external match or rights claim.
+The pre-release review covered the 15 files present before the MIT license was
+added, tracing them to the local application and examining the relevant private
+solver without including it. It checked source imports, notices and synthetic-data
+generation. No embedded third-party source or explicit conflicting license was
+identified within that review scope. This is a bounded source review, not proof
+against every possible external match or rights claim.
 
-This candidate contains reviewed Python, deterministic synthetic examples, tests,
-dependency configuration, documentation, a CI workflow and the MIT license.
-Original papers, research programs/data, competition supporting materials,
-private verification reports and the complete private workflow remain excluded.
-The original research files and historical results are not licensed or disclosed
-by this candidate's LICENSE.
+This public release contains reviewed Python code, deterministic synthetic
+examples, tests, dependency configuration, documentation, a CI workflow and the
+MIT license. Original papers, research programs/data, competition supporting
+materials, private verification reports and the complete private workflow remain
+excluded. The original research files and historical results are not licensed
+or disclosed by this repository's LICENSE.
 
 ## License and release status
 
@@ -88,20 +86,22 @@ Copyright (c) 2026 Xie Sentao. This notice follows the author's stated authorshi
 and explicit licensing instruction; it is not an independent legal determination
 of title and cannot grant rights in someone else's work.
 
-The school, applicable school agreements and current competition review status
-were not established. General institutional-rights and competition rules were
-reviewed, but that does not clear institution-specific terms or any signed
-commitment. These remain release checks, not evidence of another rights holder.
-See the [authorization checklist](docs/open_source_checklist.md). Creating this
-local candidate and license does not authorize an upload or public release.
-The release checklist is a maintainer workflow and adds no conditions to MIT.
+This repository has been publicly released. School-specific agreements, any
+applicable institutional rights, and the exact terms of any signed competition
+disclosure commitment have not been independently established. Completing the
+project individually and having no teammates does not, by itself, settle those
+separate questions. See the [authorization checklist](docs/open_source_checklist.md).
+That checklist is a maintainer workflow and adds no conditions to the MIT license.
 
 NumPy and SciPy are runtime dependencies; pytest and setuptools are test/build
 tools. They retain their respective licenses and bundled binary notices. No
 third-party source, packages or environments are bundled here. The project MIT
 license does not replace their terms or claim their copyright.
 
-The workflow describes proposed Windows/Linux checks on Python 3.11; the presence
-of the YAML file does not mean remote jobs have run. Only the versions and local
-platform in the separate review evidence have been exercised. The declared open
-dependency ranges and other Python versions have not all been validated.
+## Continuous integration
+
+The GitHub Actions run for the initial public commit completed successfully on
+both Ubuntu and Windows: the unit-test step and synthetic demonstration passed
+on each platform. See the [workflow run](https://github.com/huanci13126495439/microgrid-dispatch-lab/actions/runs/40490349596).
+These results cover the configured Python 3.11 environments only; the declared
+open dependency ranges and other Python versions have not all been validated.
