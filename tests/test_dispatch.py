@@ -44,6 +44,18 @@ def test_bad_battery_parameters():
         optimize_day([1],[0],[1], Battery(charge_efficiency=0))
 
 
+@pytest.mark.parametrize("power", [float("nan"), float("inf"), float("-inf")])
+def test_non_finite_battery_power_is_rejected(power):
+    with pytest.raises(ValueError, match="finite"):
+        optimize_day([1], [0], [1], Battery(max_power_kw=power))
+
+
+@pytest.mark.parametrize("time_limit", [float("nan"), float("inf"), float("-inf")])
+def test_non_finite_time_limit_is_rejected(time_limit):
+    with pytest.raises(ValueError, match="finite"):
+        optimize_day([1], [0], [1], time_limit_s=time_limit)
+
+
 def test_baseline_does_not_schedule_battery():
     sol=baseline([50,70],[100,10],[1,2])
     assert np.allclose(sol.purchase_kwh,[0,60])
