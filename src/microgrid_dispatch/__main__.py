@@ -57,8 +57,6 @@ def _load_csv(path: Path):
                 )
             values.append(value)
 
-    if len(records) != 144:
-        raise ValueError("v0.1 CLI expects exactly 144 ten-minute slots (one day)")
     if (
         starts[0] != 0
         or any(ends[k] - starts[k] != 10 for k in range(len(starts)))
@@ -67,6 +65,8 @@ def _load_csv(path: Path):
         raise ValueError(
             "CSV must contain contiguous ten-minute slots starting at midnight"
         )
+    if len(records) != 144:
+        raise ValueError("v0.1 CLI expects exactly 144 ten-minute slots (one day)")
     return records, [numeric_columns[key] for key in ("load_kwh", "pv_kwh", "price_per_kwh")]
 
 
@@ -77,7 +77,27 @@ def main(argv=None):
     parser.add_argument("--battery-config", type=Path, help="Optional JSON file of Battery parameters")
     args = parser.parse_args(argv)
     rows, (load, pv, price) = _load_csv(args.input)
-    battery = Battery(**json.loads(args.battery_config.read_text(encoding="utf-8"))) if args.battery_config else Battery()
+    if args.battery_config:
+        try:
+            config = json.loads(args.battery_config.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"Battery config must be valid JSON: {exc.msg}") from exc
+        if not isinstance(config, dict):
+            raise ValueError("Battery config must be a JSON object of parameter names and values")
+        allowed = {
+            "capacity_kwh", "min_soc_kwh", "max_soc_kwh", "initial_soc_kwh",
+            "terminal_soc_kwh", "max_power_kw", "charge_efficiency",
+            "discharge_efficiency", "interval_minutes",
+        }
+        unknown = sorted(set(config) - allowed)
+        if unknown:
+            raise ValueError(f"Unknown battery config parameter(s): {', '.join(unknown)}")
+        for key, value in config.items():
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                raise ValueError(f"Battery config parameter '{key}' must be numeric")
+        battery = Battery(**config)
+    else:
+        battery = Battery()
     if battery.interval_minutes != 10:
         raise ValueError("v0.1 CLI expects ten-minute slots; battery.interval_minutes must be 10")
     opt = optimize_day(load, pv, price, battery)
