@@ -7,4 +7,5 @@
 - The two efficiencies are interpreted separately; 0.9 one-way each means 0.81 round-trip, not 0.9.
 - This first version does not implement year-long dispatch, rolling MPC, tariff-violation fees, emergency purchases or stochastic programming.
 - Some users' input may lead to an infeasible MILP or HiGHS failing to certify the requested termination threshold; the code raises an error rather than inventing a result.
+- Battery numeric parameters and the solver time limit must be finite; NaN and infinite values are rejected before optimization.
 - A simulated difference from the battery-disabled baseline is not a measured financial saving.
