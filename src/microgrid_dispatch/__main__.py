@@ -13,16 +13,60 @@ def _load_csv(path: Path):
         reader = csv.DictReader(f)
         if not reader.fieldnames or any(k not in reader.fieldnames for k in required):
             raise ValueError(f"CSV must contain columns: {', '.join(required)}")
+        if len(reader.fieldnames) != len(set(reader.fieldnames)):
+            raise ValueError("CSV column names must be unique")
         records = list(reader)
     if not records:
         raise ValueError("CSV is empty")
-    starts = [int(r["start_minute"]) for r in records]
-    ends = [int(r["end_minute"]) for r in records]
-    if starts[0] != 0 or any(ends[k]-starts[k] != 10 for k in range(len(starts))) or any(starts[k] != ends[k-1] for k in range(1,len(starts))):
-        raise ValueError("CSV must contain contiguous ten-minute slots starting at midnight")
+
+    starts, ends = [], []
+    numeric_columns = {key: [] for key in ("load_kwh", "pv_kwh", "price_per_kwh")}
+    for row_number, record in enumerate(records, start=2):
+        if None in record:
+            raise ValueError(f"CSV row {row_number} has more fields than the header")
+        for key in required:
+            value = record.get(key)
+            if value is None or not value.strip():
+                raise ValueError(f"CSV row {row_number}: column '{key}' is missing a value")
+
+        try:
+            start_minute = int(record["start_minute"])
+            end_minute = int(record["end_minute"])
+        except ValueError as exc:
+            raise ValueError(
+                f"CSV row {row_number}: start_minute and end_minute must be integers"
+            ) from exc
+        starts.append(start_minute)
+        ends.append(end_minute)
+
+        for key, values in numeric_columns.items():
+            try:
+                value = float(record[key])
+            except ValueError as exc:
+                raise ValueError(
+                    f"CSV row {row_number}: column '{key}' must be a number"
+                ) from exc
+            if not __import__("math").isfinite(value):
+                raise ValueError(
+                    f"CSV row {row_number}: column '{key}' must be finite"
+                )
+            if value < 0:
+                raise ValueError(
+                    f"CSV row {row_number}: column '{key}' must be non-negative"
+                )
+            values.append(value)
+
     if len(records) != 144:
         raise ValueError("v0.1 CLI expects exactly 144 ten-minute slots (one day)")
-    return records, [[float(r[key]) for r in records] for key in ["load_kwh", "pv_kwh", "price_per_kwh"]]
+    if (
+        starts[0] != 0
+        or any(ends[k] - starts[k] != 10 for k in range(len(starts)))
+        or any(starts[k] != ends[k - 1] for k in range(1, len(starts)))
+    ):
+        raise ValueError(
+            "CSV must contain contiguous ten-minute slots starting at midnight"
+        )
+    return records, [numeric_columns[key] for key in ("load_kwh", "pv_kwh", "price_per_kwh")]
 
 
 def main(argv=None):
