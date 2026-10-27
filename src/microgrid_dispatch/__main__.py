@@ -2,6 +2,7 @@
 import argparse
 import csv
 import json
+import math
 from pathlib import Path
 
 from .model import Battery, baseline, optimize_day, validate_dispatch
@@ -46,7 +47,7 @@ def _load_csv(path: Path):
                 raise ValueError(
                     f"CSV row {row_number}: column '{key}' must be a number"
                 ) from exc
-            if not __import__("math").isfinite(value):
+            if not math.isfinite(value):
                 raise ValueError(
                     f"CSV row {row_number}: column '{key}' must be finite"
                 )
