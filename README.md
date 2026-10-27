@@ -38,6 +38,11 @@ The CSV columns are `start_minute,end_minute,load_kwh,pv_kwh,price_per_kwh`.
 The CLI requires 144 contiguous ten-minute slots starting at midnight.
 Load and PV are energy per interval in kWh, not power in kW. Prices use the
 input currency per kWh; load, PV and prices must be finite and non-negative.
+The CLI reports the row number for missing cells, non-numeric values, non-finite
+numbers, and negative energy/price values. Time columns must be integers, column
+names must be unique, and rows must describe contiguous ten-minute intervals.
+The optional battery configuration must be a JSON object with recognized parameter
+names and numeric values; battery parameter bounds are validated before solving.
 
 Illustrative defaults are 12,000 kWh capacity, SOC bounds 1,200–10,800 kWh,
 initial and terminal SOC 6,000 kWh, 5,000 kW charge/discharge power, and 0.90
