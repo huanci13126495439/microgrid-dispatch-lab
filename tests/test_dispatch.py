@@ -130,7 +130,8 @@ def test_cli_rejects_duplicate_csv_headers(tmp_path):
     from microgrid_dispatch.__main__ import main
     p = tmp_path / "invalid.csv"
     rows = _write_valid_cli_csv(p)
-    rows[0] = "start_minute,end_minute,load_kwh,pv_kwh,pv_kwh"
+    rows[0] = "start_minute,end_minute,load_kwh,pv_kwh,price_per_kwh,load_kwh"
+    rows[1] = rows[1] + ",1"
     p.write_text("\n".join(rows) + "\n", encoding="utf-8")
     with pytest.raises(ValueError, match="column names must be unique"):
         main(["--input", str(p), "--output-dir", str(tmp_path / "output")])
