@@ -98,6 +98,7 @@ def main(argv=None):
         battery = Battery(**config)
     else:
         battery = Battery()
+    battery.validate()
     if battery.interval_minutes != 10:
         raise ValueError("v0.1 CLI expects ten-minute slots; battery.interval_minutes must be 10")
     opt = optimize_day(load, pv, price, battery)
