@@ -29,7 +29,7 @@ CSV 必须包含 `start_minute,end_minute,load_kwh,pv_kwh,price_per_kwh`，并�
 
 四轮维护分别改进了非有限参数校验、CSV/电池配置校验、求解失败诊断，以及计算成本溢出保护。变更记录和对应的 PR/CI 链接见 [维护历史](docs/maintenance_history.md) 与 [变更日志](CHANGELOG.md)。
 
-当前主分支提交 `afb1557dff86a9bde933128170c4cee62c0715d9` 的 GitHub Actions 已在 Ubuntu 和 Windows、Python 3.11 上通过依赖安装、单元测试及合成演示。此结果不等于所有 Python 版本或所有依赖版本组合均已验证。
+第四轮代码维护合并提交 `afb1557dff86a9bde933128170c4cee62c0715d9` 的 GitHub Actions 已在 Ubuntu 和 Windows、Python 3.11 上通过依赖安装、单元测试及合成演示，详见 [CI 记录](https://github.com/huanci13126495439/microgrid-dispatch-lab/actions/runs/40689089861)。此结果不等于所有 Python 版本或所有依赖版本组合均已验证。
 
 ## 来源与许可边界
 
