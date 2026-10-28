@@ -68,6 +68,17 @@ def _input_arrays(load_kwh, pv_kwh, price_per_kwh):
     return arrays
 
 
+def _total_cost(price_per_kwh: np.ndarray, purchase_kwh: np.ndarray) -> float:
+    """Compute cost and reject overflow from otherwise finite input values."""
+    with np.errstate(over="ignore", invalid="ignore"):
+        total_cost = float(np.dot(price_per_kwh, purchase_kwh))
+    if not np.isfinite(total_cost):
+        raise ValueError(
+            "Computed dispatch cost is non-finite; input magnitudes exceed the supported numeric range"
+        )
+    return total_cost
+
+
 def baseline(load_kwh, pv_kwh, price_per_kwh, battery: Battery = Battery()) -> Dispatch:
     """Battery disabled, so external power fills positive net-load demand."""
     battery.validate()
@@ -78,7 +89,7 @@ def baseline(load_kwh, pv_kwh, price_per_kwh, battery: Battery = Battery()) -> D
     curtailed = np.maximum(pv - load, 0)
     return Dispatch(purchase, np.zeros_like(load), np.zeros_like(load), curtailed,
                     np.full(len(load) + 1, battery.initial_soc_kwh), price,
-                    float(price @ purchase), None, "No battery dispatch", True)
+                    _total_cost(price, purchase), None, "No battery dispatch", True)
 
 
 def optimize_day(load_kwh, pv_kwh, price_per_kwh, battery: Battery = Battery(),
@@ -165,7 +176,7 @@ def optimize_day(load_kwh, pv_kwh, price_per_kwh, battery: Battery = Battery(),
             f"MILP solve failed: {reason} (status {status}): {result.message}"
         )
     sol = Dispatch(result.x[q], result.x[b], result.x[d], result.x[w],
-                   result.x[s], price, float(price @ result.x[q]),
+                   result.x[s], price, _total_cost(price, result.x[q]),
                    float(result.mip_gap) if getattr(result, "mip_gap", None) is not None else None,
                    str(result.message))
     checks = validate_dispatch(sol, load, pv, battery)
@@ -184,6 +195,9 @@ def validate_dispatch(sol: Dispatch, load_kwh, pv_kwh, battery: Battery = Batter
             raise ValueError("Output interval arrays have invalid shape or values")
     if sol.soc_kwh.shape != (n+1,) or not np.isfinite(sol.soc_kwh).all():
         raise ValueError("Output SOC trajectory has invalid shape or values")
+    if not np.isfinite(sol.total_cost):
+        raise ValueError("Output total_cost must be finite")
+    expected_cost = _total_cost(price, sol.purchase_kwh)
     cap = battery.max_power_kw*battery.interval_minutes/60
     balance = sol.purchase_kwh + pv + sol.discharge_kwh - load - sol.charge_kwh - sol.curtailed_pv_kwh
     recursion = np.diff(sol.soc_kwh) - battery.charge_efficiency*sol.charge_kwh + sol.discharge_kwh/battery.discharge_efficiency
@@ -196,7 +210,7 @@ def validate_dispatch(sol: Dispatch, load_kwh, pv_kwh, battery: Battery = Batter
                    np.max(np.maximum(0, sol.soc_kwh-battery.max_soc_kwh)),
                    abs(sol.soc_kwh[0]-battery.initial_soc_kwh),
                    abs(sol.soc_kwh[-1]-battery.terminal_soc_kwh),
-                   abs(sol.total_cost-float(price@sol.purchase_kwh))])
+                   abs(sol.total_cost-expected_cost)])
     simultaneous = int(np.count_nonzero((sol.charge_kwh > 1e-6)&(sol.discharge_kwh > 1e-6)))
     issues.append(float(simultaneous))
     return {"max_balance_residual_kwh": float(np.max(np.abs(balance))),
