@@ -3,7 +3,7 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 import microgrid_dispatch.model as model_module
-from microgrid_dispatch import Battery, baseline, optimize_day, validate_dispatch
+from microgrid_dispatch import Battery, Dispatch, baseline, optimize_day, validate_dispatch
 
 
 def test_optimizer_respects_physics():
@@ -93,6 +93,61 @@ def test_solver_success_without_solution_vector_is_reported(monkeypatch):
     )
     with pytest.raises(RuntimeError, match="reported success but returned no solution vector"):
         optimize_day([1], [0], [1])
+
+
+def test_baseline_rejects_overflowing_total_cost():
+    with pytest.raises(ValueError, match="input magnitudes exceed the supported numeric range"):
+        baseline([2.0], [0.0], [1e308])
+
+
+def test_optimizer_rejects_overflowing_total_cost(monkeypatch):
+    # A solver-reported feasible vector can still produce an unrepresentable cost.
+    x = np.zeros(7)
+    x[0] = 2.0  # purchase for the single interval
+    x[4] = 6000.0
+    x[5] = 6000.0
+    monkeypatch.setattr(
+        model_module,
+        "milp",
+        lambda *args, **kwargs: SimpleNamespace(
+            status=0, x=x, message="simulated successful solve", mip_gap=0.0
+        ),
+    )
+    with pytest.raises(ValueError, match="input magnitudes exceed the supported numeric range"):
+        optimize_day([2.0], [0.0], [1e308])
+
+
+@pytest.mark.parametrize("bad_cost", [float("nan"), float("inf"), float("-inf")])
+def test_validate_dispatch_rejects_non_finite_reported_cost(bad_cost):
+    sol = Dispatch(
+        purchase_kwh=np.array([2.0]),
+        charge_kwh=np.array([0.0]),
+        discharge_kwh=np.array([0.0]),
+        curtailed_pv_kwh=np.array([0.0]),
+        soc_kwh=np.array([6000.0, 6000.0]),
+        price_per_kwh=np.array([1.0]),
+        total_cost=bad_cost,
+        mip_gap=0.0,
+        message="test dispatch",
+    )
+    with pytest.raises(ValueError, match="total_cost must be finite"):
+        validate_dispatch(sol, [2.0], [0.0])
+
+
+def test_validate_dispatch_rejects_overflowing_recomputed_cost():
+    sol = Dispatch(
+        purchase_kwh=np.array([2.0]),
+        charge_kwh=np.array([0.0]),
+        discharge_kwh=np.array([0.0]),
+        curtailed_pv_kwh=np.array([0.0]),
+        soc_kwh=np.array([6000.0, 6000.0]),
+        price_per_kwh=np.array([1e308]),
+        total_cost=1e308,
+        mip_gap=0.0,
+        message="test dispatch",
+    )
+    with pytest.raises(ValueError, match="input magnitudes exceed the supported numeric range"):
+        validate_dispatch(sol, [2.0], [0.0])
 
 
 def test_baseline_does_not_schedule_battery():
