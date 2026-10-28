@@ -76,9 +76,86 @@ def test_cli_creates_outputs(tmp_path):
     assert summary["optimized_cost"] <= summary["battery_disabled_baseline_cost"]
 
 
+def _write_valid_cli_csv(path):
+    header = "start_minute,end_minute,load_kwh,pv_kwh,price_per_kwh"
+    rows = [header]
+    rows.extend(f"{10*k},{10*(k+1)},1,0,1" for k in range(144))
+    path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+    return rows
+
+
 def test_cli_requires_contiguous_ten_minute_slots(tmp_path):
     from microgrid_dispatch.__main__ import main
-    p=tmp_path / "invalid.csv"
-    p.write_text("start_minute,end_minute,load_kwh,pv_kwh,price_per_kwh\n5,15,1,0,1\n")
-    with pytest.raises(ValueError):
+    p = tmp_path / "invalid.csv"
+    rows = _write_valid_cli_csv(p)
+    rows[2] = "25,30,1,0,1"
+    p.write_text("\n".join(rows) + "\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="contiguous ten-minute slots"):
         main(["--input", str(p), "--output-dir", str(tmp_path / "output")])
+
+
+@pytest.mark.parametrize(
+    ("column", "value", "message"),
+    [
+        ("load_kwh", "NaN", "must be finite"),
+        ("pv_kwh", "Infinity", "must be finite"),
+        ("price_per_kwh", "-1", "must be non-negative"),
+        ("load_kwh", "not-a-number", "must be a number"),
+    ],
+)
+def test_cli_rejects_invalid_csv_numeric_values(tmp_path, column, value, message):
+    from microgrid_dispatch.__main__ import main
+    p = tmp_path / "invalid.csv"
+    rows = _write_valid_cli_csv(p)
+    keys = rows[0].split(",")
+    values = rows[1].split(",")
+    values[keys.index(column)] = value
+    rows[1] = ",".join(values)
+    p.write_text("\n".join(rows) + "\n", encoding="utf-8")
+    with pytest.raises(ValueError, match=message):
+        main(["--input", str(p), "--output-dir", str(tmp_path / "output")])
+
+
+def test_cli_rejects_missing_csv_cell_with_row_context(tmp_path):
+    from microgrid_dispatch.__main__ import main
+    p = tmp_path / "invalid.csv"
+    rows = _write_valid_cli_csv(p)
+    rows[1] = "0,10,,0,1"
+    p.write_text("\n".join(rows) + "\n", encoding="utf-8")
+    with pytest.raises(ValueError, match=r"row 2.*load_kwh.*missing"):
+        main(["--input", str(p), "--output-dir", str(tmp_path / "output")])
+
+
+def test_cli_rejects_duplicate_csv_headers(tmp_path):
+    from microgrid_dispatch.__main__ import main
+    p = tmp_path / "invalid.csv"
+    rows = _write_valid_cli_csv(p)
+    rows[0] = "start_minute,end_minute,load_kwh,pv_kwh,price_per_kwh,load_kwh"
+    rows[1] = rows[1] + ",1"
+    p.write_text("\n".join(rows) + "\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="column names must be unique"):
+        main(["--input", str(p), "--output-dir", str(tmp_path / "output")])
+
+
+@pytest.mark.parametrize(
+    ("config_text", "message"),
+    [
+        ("[]", "must be a JSON object"),
+        ('{"unknown_parameter": 1}', "Unknown battery config parameter"),
+        ('{"max_power_kw": "high"}', "must be numeric"),
+        ('{"max_power_kw": NaN}', "must be finite"),
+        ("{not-json}", "must be valid JSON"),
+    ],
+)
+def test_cli_rejects_invalid_battery_config(tmp_path, config_text, message):
+    from microgrid_dispatch.__main__ import main
+    csv_path = tmp_path / "valid.csv"
+    config_path = tmp_path / "battery.json"
+    _write_valid_cli_csv(csv_path)
+    config_path.write_text(config_text, encoding="utf-8")
+    with pytest.raises(ValueError, match=message):
+        main([
+            "--input", str(csv_path),
+            "--battery-config", str(config_path),
+            "--output-dir", str(tmp_path / "output"),
+        ])
