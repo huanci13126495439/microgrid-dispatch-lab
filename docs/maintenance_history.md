@@ -2,12 +2,21 @@
 
 This log records the four focused maintenance pull requests merged after the initial public commit. It records repository changes and CI evidence, not claims of field deployment, measured savings, or independent legal verification.
 
-## Current verified baseline
+## Verified baselines
 
-- Main branch commit: [`afb1557dff86a9bde933128170c4cee62c0715d9`](https://github.com/huanci13126495439/microgrid-dispatch-lab/commit/afb1557dff86a9bde933128170c4cee62c0715d9)
-- Post-merge CI: [run 40689089861](https://github.com/huanci13126495439/microgrid-dispatch-lab/actions/runs/40689089861)
+### Fourth code-maintenance merge (before documentation updates)
+
+- Commit: [`afb1557dff86a9bde933128170c4cee62c0715d9`](https://github.com/huanci13126495439/microgrid-dispatch-lab/commit/afb1557dff86a9bde933128170c4cee62c0715d9)
+- CI: [run 40689089861](https://github.com/huanci13126495439/microgrid-dispatch-lab/actions/runs/40689089861)
 - Result: Ubuntu and Windows jobs completed successfully; dependency installation, unit tests, and synthetic demonstration all passed on both platforms.
-- CI matrix uses Python 3.11. Other Python versions and all possible dependency versions have not been exhaustively tested.
+
+### Documentation merge (current main before v0.1.1 preparation)
+
+- Commit: [`5a040e443556ef707d192da5ff27d949bdeebcb4`](https://github.com/huanci13126495439/microgrid-dispatch-lab/commit/5a040e443556ef707d192da5ff27d949bdeebcb4)
+- CI: [run 40691937787](https://github.com/huanci13126495439/microgrid-dispatch-lab/actions/runs/40691937787)
+- Result: Ubuntu and Windows jobs completed successfully; dependency installation, unit tests, and synthetic demonstration all passed on both platforms.
+
+The CI matrix uses Python 3.11. Other Python versions and all possible dependency versions have not been exhaustively tested.
 
 ## Maintenance rounds
 
