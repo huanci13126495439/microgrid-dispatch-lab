@@ -114,7 +114,7 @@ MILP objective and core constraint formulation. See the
 
 ## Continuous integration
 
-The GitHub Actions run for the current main commit
+The GitHub Actions run for the fourth maintenance merge commit
 `afb1557dff86a9bde933128170c4cee62c0715d9` completed successfully on both
 Ubuntu and Windows: dependency installation, unit tests, and the synthetic
 demonstration passed on each platform. See the
