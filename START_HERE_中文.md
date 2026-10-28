@@ -1,24 +1,40 @@
-# 从这里开始：个人项目公开候选版
+# 从这里开始：Microgrid Dispatch Lab v0.1.0
 
-作者确认：本数模项目由本人独立完成，没有队友或共同作者，是个人参赛成果。
-此前有关团队合作及队友授权的描述不准确，不再作为审核前提。
-候选版按作者指令采用 MIT 许可证，署名 Copyright (c) 2026 Xie Sentao；
-详见 LICENSE。该署名依据作者声明，不等于本审查独立确认法律权属。
+这是一个已公开发布的个人教育性项目：使用 SciPy/HiGHS 混合整数线性规划（MILP）演示单日微电网电池调度。项目采用 MIT 许可证，详见 [LICENSE](LICENSE)。
 
-本工具包含 AI 辅助开发和文档审查。完整的逐行生成记录、工具版本与条款
-尚未全部获得；测试不能代替来源判断。Python 模型改写自作者个人研究程序
-的模型与结构，不宣称与原研究完全无关或已经完整复现研究。
+## 安装与运行
 
-安装、测试及合成演示见 README。Python 环境和下载缓存可放在自选磁盘；
-Windows 可直接使用环境内的 python.exe，无需改变执行策略。
-示例 CSV 由确定性公式生成；生成器会覆盖示例 CSV，切勿放入私有数据。
-参数仅为可配置演示假设；费用差异为条件模拟结果，不代表真实节省或物理
-系统安全性。
+需要 Python 3.11 或更高版本。在仓库根目录执行：
 
-学校及其具体协议、比赛是否仍在评审或匿名阶段尚未确认。已核查通用规则，
-未据此认定学校当然拥有作品，也未认定参赛结束就自动解除全部披露限制。
-详见授权清单；这些是发布前核查事项，不给 MIT 增加额外使用条件。
+Windows：
+```powershell
+python -m venv .venv
+.venv/Scripts/python.exe -m pip install -e ".[test]"
+.venv/Scripts/python.exe examples/generate_synthetic.py
+.venv/Scripts/python.exe -m pytest -q
+.venv/Scripts/python.exe -m microgrid_dispatch --input examples/synthetic_day.csv --output-dir outputs/demo --battery-config examples/battery_config.json
+```
 
-原始论文、原研究程序、数据、支撑材料、私有验证报告和完整数模工作流
-继续排除，不属于本候选许可证覆盖的文件。审查证据留在候选目录外。
-本轮不创建仓库、不推送、不发布。
+Linux/macOS 将 `.venv/Scripts/python.exe` 替换为 `.venv/bin/python`。如有需要，虚拟环境和 pip 缓存可以放在其他磁盘。
+
+输出目录会生成 `dispatch.csv` 和 `summary.json`。示例生成器会覆盖 `examples/synthetic_day.csv`，请勿把私有或比赛原始数据放入示例目录。
+
+## 输入要求与结果解释
+
+CSV 必须包含 `start_minute,end_minute,load_kwh,pv_kwh,price_per_kwh`，并包含从午夜开始、连续的 144 个十分钟时段。负荷和光伏数值是每个时段的电量（kWh），不是功率（kW）；电价按输入数据所用的货币单位计价。输入及电池参数需满足程序校验规则。
+
+项目比较优化调度与停用电池的模拟基线，输出的是合成数据条件下的模拟结果，不是实测电费节省，也没有经过真实电网或实物电池验证。**不得将结果直接用于电网控制、保护系统或真实电池控制器。** 完整模型假设见 [数学模型](docs/mathematical_model.md) 与 [局限性](docs/limitations.md)。
+
+## 维护与 CI
+
+四轮维护分别改进了非有限参数校验、CSV/电池配置校验、求解失败诊断，以及计算成本溢出保护。变更记录和对应的 PR/CI 链接见 [维护历史](docs/maintenance_history.md) 与 [变更日志](CHANGELOG.md)。
+
+当前主分支提交 `afb1557dff86a9bde933128170c4cee62c0715d9` 的 GitHub Actions 已在 Ubuntu 和 Windows、Python 3.11 上通过依赖安装、单元测试及合成演示。此结果不等于所有 Python 版本或所有依赖版本组合均已验证。
+
+## 来源与许可边界
+
+作者说明该项目由本人独立完成。Python 模型改写自作者的个人研究程序及其模型/结构；仓库不声称与原研究完全无关。开发过程中使用了 AI 辅助，但完整逐行生成记录、工具版本历史和所有适用条款并未全部留存。测试通过不等于证明每一行代码的版权归属。
+
+本仓库仅授权其中实际包含且作者有权授权的文件。原始论文、原始研究程序与数据、竞赛支撑材料、私有验证报告及完整数模工作流均不包含在仓库内，也不因本仓库的 MIT 许可证而获得许可。学校或其他机构协议及具体竞赛披露承诺未在此独立确权；参赛者身份和独立完成情况本身不能替代对这些事项的核查。
+
+NumPy、SciPy 及开发工具均保留各自许可证和第三方声明。更多限制请阅读 README 和项目文档。
