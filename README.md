@@ -1,4 +1,4 @@
-# Microgrid Dispatch Lab v0.1.0 — public release
+# Microgrid Dispatch Lab v0.1.1 — release candidate (tag pending)
 
 An educational, single-day microgrid battery scheduling demonstrator using
 SciPy/HiGHS mixed-integer linear programming. This project was completed
@@ -85,6 +85,8 @@ excluded. The original research files and historical results are not licensed
 or disclosed by this repository's LICENSE.
 
 ## License and release status
+
+The initial public version was v0.1.0. This branch prepares v0.1.1; the v0.1.1 tag and GitHub release have not been created yet.
 
 See [LICENSE](LICENSE) for the standard MIT license.
 Copyright (c) 2026 Xie Sentao. This notice follows the author's stated authorship
