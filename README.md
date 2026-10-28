@@ -103,10 +103,21 @@ tools. They retain their respective licenses and bundled binary notices. No
 third-party source, packages or environments are bundled here. The project MIT
 license does not replace their terms or claim their copyright.
 
+## Maintenance history
+
+Four focused maintenance pull requests have been merged after the initial public
+commit. They address parameter validation, malformed input handling, solver
+failure diagnostics, and non-finite computed costs. The changes preserve the
+MILP objective and core constraint formulation. See the
+[maintenance history](docs/maintenance_history.md) and
+[change log](CHANGELOG.md) for links to the reviewed pull requests and CI runs.
+
 ## Continuous integration
 
-The GitHub Actions run for the initial public commit completed successfully on
-both Ubuntu and Windows: the unit-test step and synthetic demonstration passed
-on each platform. See the [workflow run](https://github.com/huanci13126495439/microgrid-dispatch-lab/actions/runs/40490349596).
+The GitHub Actions run for the current main commit
+`afb1557dff86a9bde933128170c4cee62c0715d9` completed successfully on both
+Ubuntu and Windows: dependency installation, unit tests, and the synthetic
+demonstration passed on each platform. See the
+[workflow run](https://github.com/huanci13126495439/microgrid-dispatch-lab/actions/runs/40689089861).
 These results cover the configured Python 3.11 environments only; the declared
 open dependency ranges and other Python versions have not all been validated.
