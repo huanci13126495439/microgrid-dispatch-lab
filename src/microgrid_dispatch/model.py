@@ -150,7 +150,20 @@ def optimize_day(load_kwh, pv_kwh, price_per_kwh, battery: Battery = Battery(),
                                LinearConstraint(ineq.tocsr(), -np.inf, ineq_rhs)],
                   options={"time_limit": float(time_limit_s), "mip_rel_gap": 1e-9})
     if result.status != 0 or result.x is None:
-        raise RuntimeError(f"MILP did not complete successfully (status {result.status}): {result.message}")
+        status = int(result.status)
+        reasons = {
+            1: "the solver reached an iteration or time limit before satisfying its termination criteria",
+            2: "the model is infeasible under the supplied inputs and constraints",
+            3: "the model is unbounded; inspect the objective and variable bounds",
+            4: "the solver encountered another termination error",
+        }
+        if status == 0 and result.x is None:
+            reason = "the solver reported success but returned no solution vector"
+        else:
+            reason = reasons.get(status, "the solver returned an unrecognized status")
+        raise RuntimeError(
+            f"MILP solve failed: {reason} (status {status}): {result.message}"
+        )
     sol = Dispatch(result.x[q], result.x[b], result.x[d], result.x[w],
                    result.x[s], price, float(price @ result.x[q]),
                    float(result.mip_gap) if getattr(result, "mip_gap", None) is not None else None,

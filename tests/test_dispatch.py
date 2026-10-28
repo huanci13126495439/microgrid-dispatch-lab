@@ -1,5 +1,8 @@
+from types import SimpleNamespace
+
 import numpy as np
 import pytest
+import microgrid_dispatch.model as model_module
 from microgrid_dispatch import Battery, baseline, optimize_day, validate_dispatch
 
 
@@ -54,6 +57,42 @@ def test_non_finite_battery_power_is_rejected(power):
 def test_non_finite_time_limit_is_rejected(time_limit):
     with pytest.raises(ValueError, match="finite"):
         optimize_day([1], [0], [1], time_limit_s=time_limit)
+
+
+@pytest.mark.parametrize(
+    ("status", "expected_reason"),
+    [
+        (1, "iteration or time limit"),
+        (2, "infeasible"),
+        (3, "unbounded"),
+        (4, "termination error"),
+        (99, "unrecognized status"),
+    ],
+)
+def test_solver_failure_reports_status_reason(monkeypatch, status, expected_reason):
+    monkeypatch.setattr(
+        model_module,
+        "milp",
+        lambda *args, **kwargs: SimpleNamespace(
+            status=status, x=None, message="simulated solver message"
+        ),
+    )
+    with pytest.raises(RuntimeError, match=expected_reason) as exc_info:
+        optimize_day([1], [0], [1])
+    assert f"status {status}" in str(exc_info.value)
+    assert "simulated solver message" in str(exc_info.value)
+
+
+def test_solver_success_without_solution_vector_is_reported(monkeypatch):
+    monkeypatch.setattr(
+        model_module,
+        "milp",
+        lambda *args, **kwargs: SimpleNamespace(
+            status=0, x=None, message="empty solution"
+        ),
+    )
+    with pytest.raises(RuntimeError, match="reported success but returned no solution vector"):
+        optimize_day([1], [0], [1])
 
 
 def test_baseline_does_not_schedule_battery():
