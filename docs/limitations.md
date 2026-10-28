@@ -10,3 +10,4 @@
 - Solver failures include SciPy MILP's reported status and message. Status 1 indicates an iteration/time limit, status 2 infeasibility, status 3 unboundedness, and status 4 another solver termination error; these diagnostics describe the solver's report and are not a substitute for independent model review.
 - Battery numeric parameters and the solver time limit must be finite; NaN and infinite values are rejected before optimization.
 - A simulated difference from the battery-disabled baseline is not a measured financial saving.
+- Input values may be finite individually while their product or aggregate cost overflows floating-point range. The baseline, optimizer, and independent dispatch validator reject non-finite computed costs rather than reporting them as valid results.
