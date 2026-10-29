@@ -4,13 +4,24 @@ This log records the four focused maintenance pull requests merged after the ini
 
 ## Verified baselines
 
+### Published v0.1.1 and post-release main
+
+- Release: [v0.1.1 — Maintenance Release](https://github.com/huanci13126495439/microgrid-dispatch-lab/releases/tag/v0.1.1), published 2026-10-29; neither a draft nor a prerelease.
+- Tag target: [`77981a5be2dd89d072de36135a24af8ebdc7ac81`](https://github.com/huanci13126495439/microgrid-dispatch-lab/commit/77981a5be2dd89d072de36135a24af8ebdc7ac81).
+- Tag-target CI: [run 40693971051](https://github.com/huanci13126495439/microgrid-dispatch-lab/actions/runs/40693971051).
+- Publication: [run 40861636168](https://github.com/huanci13126495439/microgrid-dispatch-lab/actions/runs/40861636168) succeeded.
+- Post-release automation merge: [`59d1a8320915ed7854b3935f790caf2dca8cdcb0`](https://github.com/huanci13126495439/microgrid-dispatch-lab/commit/59d1a8320915ed7854b3935f790caf2dca8cdcb0); [CI run 40861636393](https://github.com/huanci13126495439/microgrid-dispatch-lab/actions/runs/40861636393).
+- Both CI runs passed dependency installation, unit tests, and the synthetic demonstration on Ubuntu and Windows with Python 3.11.
+- The published tag retains its original candidate-era documentation. The post-release documentation correction does not move the tag or alter the Release.
+- The one-time publishing workflow is retired after successful publication. The independent `tests.yml` workflow continues on pushes and pull requests.
+
 ### Fourth code-maintenance merge (before documentation updates)
 
 - Commit: [`afb1557dff86a9bde933128170c4cee62c0715d9`](https://github.com/huanci13126495439/microgrid-dispatch-lab/commit/afb1557dff86a9bde933128170c4cee62c0715d9)
 - CI: [run 40689089861](https://github.com/huanci13126495439/microgrid-dispatch-lab/actions/runs/40689089861)
 - Result: Ubuntu and Windows jobs completed successfully; dependency installation, unit tests, and synthetic demonstration all passed on both platforms.
 
-### Documentation merge (current main before v0.1.1 preparation)
+### Documentation merge (before v0.1.1 preparation)
 
 - Commit: [`5a040e443556ef707d192da5ff27d949bdeebcb4`](https://github.com/huanci13126495439/microgrid-dispatch-lab/commit/5a040e443556ef707d192da5ff27d949bdeebcb4)
 - CI: [run 40691937787](https://github.com/huanci13126495439/microgrid-dispatch-lab/actions/runs/40691937787)

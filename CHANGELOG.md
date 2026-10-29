@@ -2,9 +2,9 @@
 
 All notable project changes are documented here. This file links to reviewed pull requests and actual CI runs.
 
-## 0.1.1 — Maintenance release candidate (tag pending)
+## 0.1.1 — Maintenance release (2026-10-29)
 
-This candidate includes the following maintenance changes after the initial v0.1.0 public version. The `v0.1.1` Git tag and GitHub release have **not** been created yet.
+This release includes the following maintenance changes after the initial v0.1.0 public version. The [v0.1.1 GitHub Release](https://github.com/huanci13126495439/microgrid-dispatch-lab/releases/tag/v0.1.1) is published, with the tag pointing to commit `77981a5be2dd89d072de36135a24af8ebdc7ac81`.
 
 ### Validation and reliability
 
