@@ -1,8 +1,16 @@
 # Maintenance history and verification evidence
 
-This log records the four focused maintenance pull requests merged after the initial public commit. It records repository changes and CI evidence, not claims of field deployment, measured savings, or independent legal verification.
+This log records the four focused code-maintenance pull requests and subsequent release-documentation maintenance merged after the initial public commit. It records repository changes and CI evidence, not claims of field deployment, measured savings, or independent legal verification.
 
 ## Verified baselines
+
+### PR #8 — Post-release cleanup
+
+- PR: [#8](https://github.com/huanci13126495439/microgrid-dispatch-lab/pull/8), merged into `main`.
+- Merge commit: [`0fc3b0f5f829c6813fd609561adb2ef64ed2d019`](https://github.com/huanci13126495439/microgrid-dispatch-lab/commit/0fc3b0f5f829c6813fd609561adb2ef64ed2d019).
+- Post-merge CI: [run 40912349520](https://github.com/huanci13126495439/microgrid-dispatch-lab/actions/runs/40912349520).
+- Result: dependency installation, unit tests, and the synthetic demonstration passed on both Ubuntu and Windows with Python 3.11.
+- Scope: removed the one-time v0.1.1 publishing workflow and updated README, the Chinese getting-started guide, CHANGELOG, and this maintenance history. Model logic, tests, license, version, and the published v0.1.1 tag and Release were unchanged.
 
 ### Published v0.1.1 and post-release main
 
