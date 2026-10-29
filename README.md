@@ -1,4 +1,4 @@
-# Microgrid Dispatch Lab v0.1.1 — release candidate (tag pending)
+# Microgrid Dispatch Lab v0.1.1
 
 An educational, single-day microgrid battery scheduling demonstrator using
 SciPy/HiGHS mixed-integer linear programming. This project was completed
@@ -86,7 +86,7 @@ or disclosed by this repository's LICENSE.
 
 ## License and release status
 
-The initial public version was v0.1.0. This branch prepares v0.1.1; the v0.1.1 tag and GitHub release have not been created yet.
+The initial public version was v0.1.0. [v0.1.1 — Maintenance Release](https://github.com/huanci13126495439/microgrid-dispatch-lab/releases/tag/v0.1.1) was published on 2026-10-29 from commit `77981a5be2dd89d072de36135a24af8ebdc7ac81`.
 
 See [LICENSE](LICENSE) for the standard MIT license.
 Copyright (c) 2026 Xie Sentao. This notice follows the author's stated authorship
@@ -116,10 +116,10 @@ MILP objective and core constraint formulation. See the
 
 ## Continuous integration
 
-The GitHub Actions run for the fourth maintenance merge commit
-`afb1557dff86a9bde933128170c4cee62c0715d9` completed successfully on both
+The GitHub Actions run for the post-release automation merge commit
+`59d1a8320915ed7854b3935f790caf2dca8cdcb0` completed successfully on both
 Ubuntu and Windows: dependency installation, unit tests, and the synthetic
 demonstration passed on each platform. See the
-[workflow run](https://github.com/huanci13126495439/microgrid-dispatch-lab/actions/runs/40689089861).
+[workflow run](https://github.com/huanci13126495439/microgrid-dispatch-lab/actions/runs/40861636393).
 These results cover the configured Python 3.11 environments only; the declared
 open dependency ranges and other Python versions have not all been validated.

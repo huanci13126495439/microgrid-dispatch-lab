@@ -1,6 +1,6 @@
-# 从这里开始：Microgrid Dispatch Lab v0.1.1（发布候选，标签待创建）
+# 从这里开始：Microgrid Dispatch Lab v0.1.1（维护版本）
 
-这是一个已公开发布的个人教育性项目，当前正在准备 v0.1.1 维护版本。此分支是发布候选，v0.1.1 标签尚未创建。项目使用 SciPy/HiGHS 混合整数线性规划（MILP）演示单日微电网电池调度，并采用 MIT 许可证，详见 [LICENSE](LICENSE)。
+这是一个已公开发布的个人教育性项目。[v0.1.1 维护版本](https://github.com/huanci13126495439/microgrid-dispatch-lab/releases/tag/v0.1.1) 已于 2026-10-29 正式发布，标签指向提交 `77981a5be2dd89d072de36135a24af8ebdc7ac81`。项目使用 SciPy/HiGHS 混合整数线性规划（MILP）演示单日微电网电池调度，并采用 MIT 许可证，详见 [LICENSE](LICENSE)。
 
 ## 安装与运行
 
@@ -29,7 +29,7 @@ CSV 必须包含 `start_minute,end_minute,load_kwh,pv_kwh,price_per_kwh`，并�
 
 四轮维护分别改进了非有限参数校验、CSV/电池配置校验、求解失败诊断，以及计算成本溢出保护。变更记录和对应的 PR/CI 链接见 [维护历史](docs/maintenance_history.md) 与 [变更日志](CHANGELOG.md)。
 
-第四轮代码维护合并提交 `afb1557dff86a9bde933128170c4cee62c0715d9` 的 GitHub Actions 已在 Ubuntu 和 Windows、Python 3.11 上通过依赖安装、单元测试及合成演示，详见 [CI 记录](https://github.com/huanci13126495439/microgrid-dispatch-lab/actions/runs/40689089861)。此结果不等于所有 Python 版本或所有依赖版本组合均已验证。
+发布自动化合并提交 `59d1a8320915ed7854b3935f790caf2dca8cdcb0` 的 GitHub Actions 已在 Ubuntu 和 Windows、Python 3.11 上通过依赖安装、单元测试及合成演示，详见 [CI 记录](https://github.com/huanci13126495439/microgrid-dispatch-lab/actions/runs/40861636393)。此结果不等于所有 Python 版本或所有依赖版本组合均已验证。
 
 ## 来源与许可边界
 
