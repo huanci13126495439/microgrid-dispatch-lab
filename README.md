@@ -134,6 +134,6 @@ resolved at that time. Separately, on Windows/Python 3.11, NumPy 1.24.0,
 SciPy 1.11.0, pytest 7.0.0 and setuptools 77.0.3 passed 41 tests; SciPy 1.11.0
 was subsequently found to be yanked and is not recommended for installation.
 An additional Windows/Python 3.11 run using NumPy 1.24.0, SciPy 1.11.4,
-pytest 7.0.0 and setuptools 77.0.3 passed 58 tests.
+pytest 7.0.0 and setuptools 77.0.3 passed 60 tests.
 Other minimum-version and dependency combinations are not established by
 these runs.
