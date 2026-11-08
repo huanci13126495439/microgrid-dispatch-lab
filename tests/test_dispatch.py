@@ -288,3 +288,78 @@ def test_cli_rejects_invalid_battery_config(tmp_path, config_text, message):
             "--battery-config", str(config_path),
             "--output-dir", str(tmp_path / "output"),
         ])
+
+
+@pytest.mark.parametrize("second", [1, 2])
+def test_cli_rejects_duplicate_battery_keys(tmp_path, second):
+    from microgrid_dispatch.__main__ import main
+    csv_path = tmp_path / "input.csv"
+    _write_valid_cli_csv(csv_path)
+    config = tmp_path / "battery.json"
+    config.write_text('{"max_power_kw": 1, "max_power_kw": ' + str(second) + '}', encoding="utf-8")
+    with pytest.raises(ValueError, match="duplicate.*max_power_kw"):
+        main(["--input", str(csv_path), "--battery-config", str(config)])
+
+
+@pytest.mark.parametrize("value", [10**309, True, float("inf"), float("nan"), "3"])
+def test_battery_invalid_number_names_parameter(value):
+    with pytest.raises(ValueError, match="max_power_kw"):
+        Battery(max_power_kw=value).validate()
+
+
+@pytest.mark.parametrize("value", [3, 3.0, np.int64(3), np.float64(3)])
+def test_battery_accepts_python_and_numpy_numbers(value):
+    Battery(max_power_kw=value).validate()
+
+
+def test_cli_rejects_huge_integer_with_parameter_name(tmp_path):
+    from microgrid_dispatch.__main__ import main
+    csv_path = tmp_path / "input.csv"
+    _write_valid_cli_csv(csv_path)
+    config = tmp_path / "battery.json"
+    config.write_text('{"max_power_kw": ' + '9'*309 + '}', encoding="utf-8")
+    with pytest.raises(ValueError, match="max_power_kw"):
+        main(["--input", str(csv_path), "--battery-config", str(config)])
+
+
+@pytest.mark.parametrize(("index", "row", "expected"), [
+    (1, "1,11,1,0,1", r"row 2.*expected 0.*actual 1"),
+    (3, "20,31,1,0,1", r"row 4.*expected 30.*actual 31"),
+    (3, "21,31,1,0,1", r"row 4.*expected 20.*actual 21"),
+    (3, "19,29,1,0,1", r"row 4.*expected 20.*actual 19"),
+    (3, "0,10,1,0,1", r"row 4.*expected 20.*actual 0"),
+])
+def test_cli_reports_time_row_and_expected_actual(tmp_path, index, row, expected):
+    from microgrid_dispatch.__main__ import _load_csv
+    csv_path = tmp_path / "input.csv"
+    rows = _write_valid_cli_csv(csv_path)
+    rows[index] = row
+    csv_path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+    with pytest.raises(ValueError, match=expected):
+        _load_csv(csv_path)
+
+
+def test_data_guides_cover_all_fields_and_battery_parameters():
+    from pathlib import Path
+    root = Path(__file__).resolve().parents[1]
+    fields = ("start_minute", "end_minute", "load_kwh", "pv_kwh", "price_per_kwh")
+    battery_fields = ("capacity_kwh", "min_soc_kwh", "max_soc_kwh",
+                      "initial_soc_kwh", "terminal_soc_kwh", "max_power_kw",
+                      "charge_efficiency", "discharge_efficiency", "interval_minutes")
+    for name in ("data_preparation.md", "data_preparation_zh.md"):
+        guide = (root / "docs" / name).read_text(encoding="utf-8")
+        assert all(f"`{key}`" in guide for key in fields + battery_fields)
+        assert "144" in guide and "1440" in guide
+
+
+def test_documentation_links_to_existing_guides():
+    from pathlib import Path
+    import re
+    root = Path(__file__).resolve().parents[1]
+    files = ("README.md", "START_HERE_中文.md", "docs/data_preparation.md",
+             "docs/data_preparation_zh.md", "docs/wheel_installation.md")
+    for name in files:
+        path = root / name
+        for target in re.findall(r"\]\(([^)]+)\)", path.read_text(encoding="utf-8")):
+            if not target.startswith(("https://", "http://", "#")):
+                assert (path.parent / target.split("#", 1)[0]).is_file(), (name, target)

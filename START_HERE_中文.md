@@ -19,6 +19,9 @@ Linux/macOS 将 `.venv/Scripts/python.exe` 替换为 `.venv/bin/python`。如有
 
 输出目录会生成 `dispatch.csv` 和 `summary.json`。示例生成器会覆盖 `examples/synthetic_day.csv`，请勿把私有或比赛原始数据放入示例目录。
 
+自备数据请参阅[数据准备](docs/data_preparation_zh.md)；独立安装请参阅
+[wheel 指南](docs/wheel_installation.md)。wheel 不包含仓库示例文件或生成器。
+
 ## 输入要求与结果解释
 
 CSV 必须包含 `start_minute,end_minute,load_kwh,pv_kwh,price_per_kwh`，并包含从午夜开始、连续的 144 个十分钟时段。负荷和光伏数值是每个时段的电量（kWh），不是功率（kW）；电价按输入数据所用的货币单位计价。输入及电池参数需满足程序校验规则。
@@ -30,6 +33,14 @@ CSV 必须包含 `start_minute,end_minute,load_kwh,pv_kwh,price_per_kwh`，并�
 四轮维护分别改进了非有限参数校验、CSV/电池配置校验、求解失败诊断，以及计算成本溢出保护。变更记录和对应的 PR/CI 链接见 [维护历史](docs/maintenance_history.md) 与 [变更日志](CHANGELOG.md)。
 
 发布自动化合并提交 `59d1a8320915ed7854b3935f790caf2dca8cdcb0` 的 GitHub Actions 已在 Ubuntu 和 Windows、Python 3.11 上通过依赖安装、单元测试及合成演示，详见 [CI 记录](https://github.com/huanci13126495439/microgrid-dispatch-lab/actions/runs/40861636393)。此结果不等于所有 Python 版本或所有依赖版本组合均已验证。
+
+后续 [CI 42468884633](https://github.com/huanci13126495439/microgrid-dispatch-lab/actions/runs/42468884633)
+使用当时解析的依赖，在 Windows 和 Ubuntu 的 Python 3.11、3.12、3.13 均通过。
+另在 Windows/Python 3.11 使用 NumPy 1.24.0、SciPy 1.11.0、pytest 7.0.0、
+setuptools 77.0.3 通过 41 项测试；SciPy 1.11.0 后被发现已撤回，不建议安装。
+另在 Windows/Python 3.11 使用 NumPy 1.24.0、SciPy 1.11.4、pytest 7.0.0、
+setuptools 77.0.3 通过 60 项测试。
+这些记录不能证明其他最低版本或依赖组合均通过。
 
 ## 来源与许可边界
 

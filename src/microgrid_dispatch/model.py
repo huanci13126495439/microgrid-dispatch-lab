@@ -5,6 +5,7 @@ Adapted from the author's individual modeling research, with AI assistance.
 See LICENSE and the source/release review limits in the authorization checklist.
 """
 from dataclasses import dataclass
+from numbers import Real
 
 import numpy as np
 from scipy.optimize import Bounds, LinearConstraint, milp
@@ -24,13 +25,18 @@ class Battery:
     interval_minutes: int = 10
 
     def validate(self) -> None:
-        numeric_parameters = (
-            self.capacity_kwh, self.min_soc_kwh, self.max_soc_kwh,
-            self.initial_soc_kwh, self.terminal_soc_kwh, self.max_power_kw,
-            self.charge_efficiency, self.discharge_efficiency, self.interval_minutes,
-        )
-        if not all(np.isfinite(value) for value in numeric_parameters):
-            raise ValueError("Battery parameters must be finite")
+        for name in ("capacity_kwh", "min_soc_kwh", "max_soc_kwh",
+                     "initial_soc_kwh", "terminal_soc_kwh", "max_power_kw",
+                     "charge_efficiency", "discharge_efficiency", "interval_minutes"):
+            value = getattr(self, name)
+            if isinstance(value, (bool, np.bool_)) or not isinstance(value, Real):
+                raise ValueError(f"Battery parameter '{name}' must be finite and numeric")
+            try:
+                finite = np.isfinite(float(value))
+            except (OverflowError, ValueError):
+                finite = False
+            if not finite:
+                raise ValueError(f"Battery parameter '{name}' must be finite and numeric")
         if not (0 <= self.min_soc_kwh < self.max_soc_kwh <= self.capacity_kwh):
             raise ValueError("Require 0 <= min SOC < max SOC <= capacity")
         if not (self.min_soc_kwh <= self.initial_soc_kwh <= self.max_soc_kwh):
