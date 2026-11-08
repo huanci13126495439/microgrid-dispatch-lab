@@ -1,8 +1,16 @@
 # Maintenance history and verification evidence
 
-This log records the four focused code-maintenance pull requests and subsequent release-documentation maintenance merged after the initial public commit. It records repository changes and CI evidence, not claims of field deployment, measured savings, or independent legal verification.
+This log records the initial focused code-maintenance pull requests and subsequent release-documentation and reliability maintenance merged after the initial public commit. It records repository changes and CI evidence, not claims of field deployment, measured savings, or independent legal verification.
 
 ## Verified baselines
+
+### M02 — Reliability and compatibility maintenance
+
+- PR: [#10](https://github.com/huanci13126495439/microgrid-dispatch-lab/pull/10); merge commit: [`5abc356685a5a31f3d9eaee0f2692cf991de7610`](https://github.com/huanci13126495439/microgrid-dispatch-lab/commit/5abc356685a5a31f3d9eaee0f2692cf991de7610).
+- Reject a non-finite derived battery step capacity before solving, avoiding a misleading solver infeasibility report after numerical overflow.
+- Calculate simulated cost-reduction percentages in a safer order and validate JSON serialization before writing outputs. Regression tests cover both cases; the extreme-cost output test uses a controlled solver result.
+- Post-merge CI: [run 42465766980](https://github.com/huanci13126495439/microgrid-dispatch-lab/actions/runs/42465766980). All six Ubuntu/Windows × Python 3.11/3.12/3.13 jobs passed dependency installation, unit tests, and the synthetic CLI demonstration.
+- These results cover the dependency versions resolved in those runs, not every allowed dependency combination or real-world operation.
 
 ### PR #8 — Post-release cleanup
 
@@ -35,7 +43,7 @@ This log records the four focused code-maintenance pull requests and subsequent 
 - CI: [run 40691937787](https://github.com/huanci13126495439/microgrid-dispatch-lab/actions/runs/40691937787)
 - Result: Ubuntu and Windows jobs completed successfully; dependency installation, unit tests, and synthetic demonstration all passed on both platforms.
 
-The CI matrix uses Python 3.11. Other Python versions and all possible dependency versions have not been exhaustively tested.
+The pre-M02 CI runs listed above used Python 3.11; the M02 matrix additionally tested Python 3.12 and 3.13. Other Python versions and all possible dependency versions have not been exhaustively tested.
 
 ## Maintenance rounds
 
@@ -69,7 +77,7 @@ The CI matrix uses Python 3.11. Other Python versions and all possible dependenc
 
 ## What the evidence does and does not establish
 
-The linked GitHub Actions runs show that the repository's configured CI completed successfully on Ubuntu and Windows with Python 3.11. They do not establish physical performance, real-world savings, suitability for grid control, or correctness under every possible input and dependency combination.
+The linked GitHub Actions runs show that the configured CI completed successfully on Ubuntu and Windows with the Python versions specified for each run. They do not establish physical performance, real-world savings, suitability for grid control, or correctness under every possible input and dependency combination.
 
 The project uses synthetic demonstration data. Reported cost differences are simulated outcomes under stated assumptions, not measured savings. The repository excludes the original research paper, original research programs and data, competition support materials, private verification reports, and the complete private modeling workflow.
 
