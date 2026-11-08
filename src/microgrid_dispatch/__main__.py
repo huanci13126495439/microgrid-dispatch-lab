@@ -8,6 +8,15 @@ from pathlib import Path
 from .model import Battery, baseline, optimize_day, validate_dispatch
 
 
+def _unique_json_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"Battery config has duplicate parameter '{key}'")
+        result[key] = value
+    return result
+
+
 def _load_csv(path: Path):
     required = ["start_minute", "end_minute", "load_kwh", "pv_kwh", "price_per_kwh"]
     with path.open(encoding="utf-8-sig", newline="") as f:
@@ -57,14 +66,19 @@ def _load_csv(path: Path):
                 )
             values.append(value)
 
-    if (
-        starts[0] != 0
-        or any(ends[k] - starts[k] != 10 for k in range(len(starts)))
-        or any(starts[k] != ends[k - 1] for k in range(1, len(starts)))
-    ):
-        raise ValueError(
-            "CSV must contain contiguous ten-minute slots starting at midnight"
-        )
+    for k, (start, end) in enumerate(zip(starts, ends)):
+        expected_start = 0 if k == 0 else ends[k - 1]
+        if start != expected_start:
+            raise ValueError(
+                f"CSV must contain contiguous ten-minute slots starting at midnight: "
+                f"row {k+2} expected {expected_start} start_minute, actual {start}"
+            )
+        expected_end = start + 10
+        if end != expected_end:
+            raise ValueError(
+                f"CSV must contain contiguous ten-minute slots: row {k+2} "
+                f"expected {expected_end} end_minute, actual {end}"
+            )
     if len(records) != 144:
         raise ValueError("v0.1 CLI expects exactly 144 ten-minute slots (one day)")
     return records, [numeric_columns[key] for key in ("load_kwh", "pv_kwh", "price_per_kwh")]
@@ -79,7 +93,8 @@ def main(argv=None):
     rows, (load, pv, price) = _load_csv(args.input)
     if args.battery_config:
         try:
-            config = json.loads(args.battery_config.read_text(encoding="utf-8"))
+            config = json.loads(args.battery_config.read_text(encoding="utf-8"),
+                                object_pairs_hook=_unique_json_object)
         except json.JSONDecodeError as exc:
             raise ValueError(f"Battery config must be valid JSON: {exc.msg}") from exc
         if not isinstance(config, dict):

@@ -32,6 +32,10 @@ To exercise the explicit configuration, append
 Outputs are `dispatch.csv` and `summary.json` in the requested output directory;
 generated results are not part of the reviewed public file list.
 
+For your own input see [data preparation](docs/data_preparation.md). For a
+standalone wheel, see [wheel installation](docs/wheel_installation.md); the
+wheel does not include the repository's example files or generator.
+
 ## Inputs and assumptions
 
 The CSV columns are `start_minute,end_minute,load_kwh,pv_kwh,price_per_kwh`.
@@ -123,3 +127,13 @@ demonstration passed on each platform. See the
 [workflow run](https://github.com/huanci13126495439/microgrid-dispatch-lab/actions/runs/40861636393).
 These results cover the configured Python 3.11 environments only; the declared
 open dependency ranges and other Python versions have not all been validated.
+
+The later [CI run 42468884633](https://github.com/huanci13126495439/microgrid-dispatch-lab/actions/runs/42468884633)
+passed on Windows and Ubuntu with Python 3.11, 3.12 and 3.13 using dependencies
+resolved at that time. Separately, on Windows/Python 3.11, NumPy 1.24.0,
+SciPy 1.11.0, pytest 7.0.0 and setuptools 77.0.3 passed 41 tests; SciPy 1.11.0
+was subsequently found to be yanked and is not recommended for installation.
+An additional Windows/Python 3.11 run using NumPy 1.24.0, SciPy 1.11.4,
+pytest 7.0.0 and setuptools 77.0.3 passed 58 tests.
+Other minimum-version and dependency combinations are not established by
+these runs.
