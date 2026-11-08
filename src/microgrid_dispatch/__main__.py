@@ -109,13 +109,14 @@ def main(argv=None):
                "optimized_cost": opt.total_cost,
                "battery_disabled_baseline_cost": base.total_cost,
                "simulated_cost_difference": base.total_cost - opt.total_cost,
-               "simulated_cost_reduction_percent": 100*(base.total_cost-opt.total_cost)/base.total_cost if base.total_cost else None,
+               "simulated_cost_reduction_percent": 100*((base.total_cost-opt.total_cost)/base.total_cost) if base.total_cost else None,
                "optimized_purchases_kwh": float(opt.purchase_kwh.sum()),
                "baseline_purchases_kwh": float(base.purchase_kwh.sum()),
                "solver_mip_gap": opt.mip_gap,
                "solver_message": opt.message,
                "constraints": validate_dispatch(opt, load, pv, battery),
                "disclaimer": "Not grid-control software; no real-world savings are asserted"}
+    summary_json = json.dumps(summary, indent=2, ensure_ascii=False, allow_nan=False)
     args.output_dir.mkdir(parents=True, exist_ok=True)
     with (args.output_dir / "dispatch.csv").open("w", encoding="utf-8", newline="") as f:
         fieldnames = ["start_minute", "end_minute", "load_kwh", "pv_kwh", "price_per_kwh",
@@ -132,8 +133,8 @@ def main(argv=None):
                              "soc_start_kwh":opt.soc_kwh[k], "soc_end_kwh":opt.soc_kwh[k+1],
                              "baseline_purchase_kwh":base.purchase_kwh[k]})
     with (args.output_dir / "summary.json").open("w",encoding="utf-8") as f:
-        json.dump(summary,f,indent=2,ensure_ascii=False,allow_nan=False)
-    print(json.dumps(summary,indent=2,ensure_ascii=False,allow_nan=False))
+        f.write(summary_json)
+    print(summary_json)
 
 if __name__ == "__main__":
     main()

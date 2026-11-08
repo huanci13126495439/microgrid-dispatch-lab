@@ -47,6 +47,41 @@ def test_bad_battery_parameters():
         optimize_day([1],[0],[1], Battery(charge_efficiency=0))
 
 
+def test_overflowing_step_capacity_is_rejected_before_solving():
+    with pytest.raises(ValueError, match="step capacity.*finite"):
+        optimize_day([1], [0], [1], Battery(max_power_kw=1e308))
+
+
+def test_cli_large_cost_reduction_produces_valid_json(tmp_path, monkeypatch):
+    import json
+    from microgrid_dispatch import __main__ as cli
+
+    csv_path = tmp_path / "large_price.csv"
+    rows = _write_valid_cli_csv(csv_path)
+    rows[1] = "0,10,1,0,1e307"
+    rows[2:] = [row.rsplit(",", 1)[0] + ",0" for row in rows[2:]]
+    csv_path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+
+    def fake_optimized(load, pv, price, battery):
+        n = len(load)
+        purchase = np.ones(n)
+        purchase[0] = 0
+        purchase[1] += 1 / 0.81
+        charge = np.zeros(n)
+        charge[1] = 1 / 0.81
+        discharge = np.zeros(n)
+        discharge[0] = 1
+        soc = np.full(n + 1, battery.initial_soc_kwh)
+        soc[1] -= 1 / 0.9
+        return Dispatch(purchase, charge, discharge, np.zeros(n), soc,
+                        np.asarray(price), 0.0, 0.0, "test solution")
+
+    monkeypatch.setattr(cli, "optimize_day", fake_optimized)
+    cli.main(["--input", str(csv_path), "--output-dir", str(tmp_path / "output")])
+    summary = json.loads((tmp_path / "output" / "summary.json").read_text(encoding="utf-8"))
+    assert summary["simulated_cost_reduction_percent"] == pytest.approx(100.0)
+
+
 @pytest.mark.parametrize("power", [float("nan"), float("inf"), float("-inf")])
 def test_non_finite_battery_power_is_rejected(power):
     with pytest.raises(ValueError, match="finite"):
