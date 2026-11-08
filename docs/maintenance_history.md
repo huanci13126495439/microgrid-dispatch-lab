@@ -43,7 +43,7 @@ This log records the initial focused code-maintenance pull requests and subseque
 - CI: [run 40691937787](https://github.com/huanci13126495439/microgrid-dispatch-lab/actions/runs/40691937787)
 - Result: Ubuntu and Windows jobs completed successfully; dependency installation, unit tests, and synthetic demonstration all passed on both platforms.
 
-The earlier CI runs above used Python 3.11; the M02 matrix additionally tested Python 3.12 and 3.13. Other Python versions and all possible dependency versions have not been exhaustively tested.
+The pre-M02 CI runs listed above used Python 3.11; the M02 matrix additionally tested Python 3.12 and 3.13. Other Python versions and all possible dependency versions have not been exhaustively tested.
 
 ## Maintenance rounds
 
