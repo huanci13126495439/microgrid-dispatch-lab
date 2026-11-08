@@ -39,6 +39,8 @@ class Battery:
             raise ValueError("Terminal SOC is outside storage bounds")
         if self.max_power_kw <= 0 or self.interval_minutes <= 0:
             raise ValueError("Power limit and interval duration must be positive")
+        if not np.isfinite(self.max_power_kw * self.interval_minutes / 60.0):
+            raise ValueError("Battery step capacity must be finite")
         if not (0 < self.charge_efficiency <= 1 and 0 < self.discharge_efficiency <= 1):
             raise ValueError("Charge and discharge efficiencies must be in (0, 1]")
 
