@@ -39,7 +39,7 @@ CSV 必须包含 `start_minute,end_minute,load_kwh,pv_kwh,price_per_kwh`，并�
 另在 Windows/Python 3.11 使用 NumPy 1.24.0、SciPy 1.11.0、pytest 7.0.0、
 setuptools 77.0.3 通过 41 项测试；SciPy 1.11.0 后被发现已撤回，不建议安装。
 另在 Windows/Python 3.11 使用 NumPy 1.24.0、SciPy 1.11.4、pytest 7.0.0、
-setuptools 77.0.3 通过 58 项测试。
+setuptools 77.0.3 通过 60 项测试。
 这些记录不能证明其他最低版本或依赖组合均通过。
 
 ## 来源与许可边界
