@@ -634,7 +634,7 @@ def test_result_interpretation_explains_cost_and_constraint_limits():
     zh = (root / "docs/result_interpretation_zh.md").read_text(encoding="utf-8")
     assert "interval purchase cost" in en and "price_per_kwh" in en
     assert "null" in en
-    assert "per interval in kwh" in en and "not power in kw" in en
+    assert "kwh per interval" in en and "not kw" in en
     assert "\u76f4\u63a5\u4f9b\u8d1f\u8377" in zh and "\u7535\u6c60\u5145\u7535" in zh
     assert "simultaneous_charge_discharge_slots" in en
     assert "\u5355\u4e00\u5355\u4f4d" in zh and "kwh" in zh

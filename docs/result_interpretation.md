@@ -1,10 +1,11 @@
 # Interpreting results
 
 This guide describes the existing `dispatch.csv` and `summary.json` files. The
-program models one day as 144 ten-minute intervals. Every energy field below is
-energy **per interval in kWh**, not power in kW. `price_per_kwh` is in the
-currency unit supplied by the input data per kWh; reported costs use that same
-currency unit.
+program models one day as 144 ten-minute intervals. Flow fields such as load,
+PV, purchases, charging, discharging and curtailment are **kWh per interval**,
+not kW. SOC fields are stored energy at interval boundaries in kWh, not interval
+flows. `price_per_kwh` is in the input currency per kWh; reported costs use that
+same currency unit.
 
 ## `dispatch.csv`
 
@@ -23,9 +24,9 @@ currency unit.
 | `soc_end_kwh` | Battery state of charge at interval end | kWh | Reflects charging and discharging efficiencies. |
 | `baseline_purchase_kwh` | Grid purchase for the same input interval with battery dispatch disabled | kWh/interval | Comparison baseline, not a second optimized schedule. |
 
-All interval energy fields are not kW. To express an interval-average power in
-kW, divide its kWh by the interval duration in hours (10/60). This conversion
-does not turn the optimization output into a measured power trace.
+To express an interval-average power in kW, divide a flow field's kWh by the
+interval duration in hours (10/60). This conversion does not turn the
+optimization output into a measured power trace.
 
 ## `summary.json`
 

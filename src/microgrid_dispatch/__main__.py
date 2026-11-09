@@ -3,8 +3,8 @@ import argparse
 import csv
 import json
 import math
-from pathlib import Path
 import sys
+from pathlib import Path
 
 from .model import Battery, baseline, optimize_day, validate_dispatch
 
