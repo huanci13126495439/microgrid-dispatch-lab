@@ -18,7 +18,7 @@ classifiers = ["Programming Language :: Python :: 3", "Development Status :: 3 -
 test = ["pytest>=7"]
 
 [project.scripts]
-microgrid-dispatch = "microgrid_dispatch.__main__:main"
+microgrid-dispatch = "microgrid_dispatch.__main__:cli"
 
 [tool.setuptools.packages.find]
 where = ["src"]
