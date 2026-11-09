@@ -101,13 +101,18 @@ The `constraints` object reports:
 | --- | --- | --- |
 | `max_balance_residual_kwh` | Largest absolute per-interval energy-balance residual | kWh; should be near zero within numerical tolerance. |
 | `max_soc_residual_kwh` | Largest absolute SOC recursion residual | kWh; should be near zero within numerical tolerance. |
-| `max_constraint_violation` | Largest numeric violation among several checks | A mixed aggregate, not one physical residual with a single unit. Its checks include energy/bound violations and the count of simultaneous charge/discharge intervals. |
+| `max_constraint_violation` | Largest numeric value among several validation checks: negative flow values, PV-curtailment and charge/discharge bounds, SOC bounds and endpoint deviations, total-cost consistency, and the count of simultaneous charge/discharge intervals | A mixed diagnostic aggregate with no single physical unit; it is not a residual measured only in kWh. |
 | `simultaneous_charge_discharge_slots` | Number of intervals with both charge and discharge above the validation threshold | intervals; expected to be zero. |
 | `min_soc_kwh` | Lowest SOC in the trajectory | kWh. |
 | `max_soc_kwh` | Highest SOC in the trajectory | kWh. |
 
-In particular, do not label `max_constraint_violation` simply as kWh: the
-current calculation takes a maximum that also includes a count of intervals.
+`max_balance_residual_kwh` and `max_soc_residual_kwh` are reported separately;
+they are not folded into `max_constraint_violation`. The latter also includes
+initial- and terminal-SOC deviations, the difference between reported and
+recomputed total cost, and a count of simultaneous charge/discharge intervals.
+Because it combines energy-valued checks, a cost difference, and a count, it has
+no single unit. Read it only as a mixed validation diagnostic, not as a physical
+residual in kWh.
 
 ## Limits
 
