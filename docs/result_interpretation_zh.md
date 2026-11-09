@@ -94,13 +94,16 @@ SOC 终值 = SOC 初值
 | --- | --- | --- |
 | `max_balance_residual_kwh` | 最大绝对时段能量平衡残差 | kWh；在数值容差范围内应接近零。 |
 | `max_soc_residual_kwh` | 最大绝对 SOC 递推残差 | kWh；在数值容差范围内应接近零。 |
-| `max_constraint_violation` | 多项检查违反量中的最大数值 | 混合汇总量，不是具有单一单位的物理残差；检查包含能量/边界违反量，也包含同时充放电时段数。 |
+| `max_constraint_violation` | 多项校验中的最大数值，包括流量负值、弃光及充放电上限、SOC 上下限与初末值偏差、总成本一致性，以及同时充放电时段数 | 混合诊断汇总量，没有单一物理单位；不能将其视为仅以 kWh 计量的残差。 |
 | `simultaneous_charge_discharge_slots` | 充电和放电同时超过校验阈值的时段数 | 时段；预期为零。 |
 | `min_soc_kwh` | SOC 轨迹中的最低值 | kWh。 |
 | `max_soc_kwh` | SOC 轨迹中的最高值 | kWh。 |
 
-特别注意：当前 `max_constraint_violation` 取多种违反量的最大值，其中还包含
-时段计数，因此不能简单标注为 kWh。
+`max_balance_residual_kwh` 和 `max_soc_residual_kwh` 分别报告，不计入
+`max_constraint_violation`。后者还包括初始及终止 SOC 偏差、报告总成本与重新
+计算成本之间的差值，以及同时充放电时段数。由于它混合了以能量表示的检查量、
+成本差值和时段计数，因此没有单一单位。应将其理解为综合校验诊断值，而不是
+以 kWh 表示的物理残差。
 
 ## 结果局限
 
