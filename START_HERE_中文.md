@@ -19,12 +19,19 @@ Linux/macOS 将 `.venv/Scripts/python.exe` 替换为 `.venv/bin/python`。如有
 
 输出目录会生成 `dispatch.csv` 和 `summary.json`。示例生成器会覆盖 `examples/synthetic_day.csv`，请勿把私有或比赛原始数据放入示例目录。
 
+字段含义、单位、约束诊断和成本计算见[结果解释指南](docs/result_interpretation_zh.md)。
+例如，时段购电成本可按 `purchase_kwh × price_per_kwh` 计算；指南说明如何汇总
+模拟成本及理解停用电池基线。
+
 自备数据请参阅[数据准备](docs/data_preparation_zh.md)；独立安装请参阅
 [wheel 指南](docs/wheel_installation.md)。wheel 不包含仓库示例文件或生成器。
 
 ## 输入要求与结果解释
 
 CSV 必须包含 `start_minute,end_minute,load_kwh,pv_kwh,price_per_kwh`，并包含从午夜开始、连续的 144 个十分钟时段。负荷和光伏数值是每个时段的电量（kWh），不是功率（kW）；电价按输入数据所用的货币单位计价。输入及电池参数需满足程序校验规则。
+
+CLI 会简洁报告常见输入、电池配置、求解器及输出路径错误。请按提示检查文件
+路径、CSV 行/列、JSON 行/列或可写输出目录；输入规则见[数据准备指南](docs/data_preparation_zh.md)。
 
 项目比较优化调度与停用电池的模拟基线，输出的是合成数据条件下的模拟结果，不是实测电费节省，也没有经过真实电网或实物电池验证。**不得将结果直接用于电网控制、保护系统或真实电池控制器。** 完整模型假设见 [数学模型](docs/mathematical_model.md) 与 [局限性](docs/limitations.md)。
 

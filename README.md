@@ -31,6 +31,10 @@ To exercise the explicit configuration, append
 `--battery-config examples/battery_config.json` to the demonstration command.
 Outputs are `dispatch.csv` and `summary.json` in the requested output directory;
 generated results are not part of the reviewed public file list.
+See [result interpretation](docs/result_interpretation.md) for field meanings,
+units, constraint diagnostics and cost calculations. For example, interval
+purchase cost is `purchase_kwh × price_per_kwh`; the guide explains how to sum
+these simulated costs and interpret the baseline comparison.
 
 For your own input see [data preparation](docs/data_preparation.md). For a
 standalone wheel, see [wheel installation](docs/wheel_installation.md); the
@@ -47,6 +51,9 @@ numbers, and negative energy/price values. Time columns must be integers, column
 names must be unique, and rows must describe contiguous ten-minute intervals.
 The optional battery configuration must be a JSON object with recognized parameter
 names and numeric values; battery parameter bounds are validated before solving.
+The CLI reports common input, battery configuration, solver and output-path errors
+without a traceback. Check the indicated file path, CSV row/column, JSON line/column,
+or output directory; see [data preparation](docs/data_preparation.md) for input rules.
 
 Illustrative defaults are 12,000 kWh capacity, SOC bounds 1,200–10,800 kWh,
 initial and terminal SOC 6,000 kWh, 5,000 kW charge/discharge power, and 0.90

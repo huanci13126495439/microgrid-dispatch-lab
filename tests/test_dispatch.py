@@ -363,3 +363,303 @@ def test_documentation_links_to_existing_guides():
         for target in re.findall(r"\]\(([^)]+)\)", path.read_text(encoding="utf-8")):
             if not target.startswith(("https://", "http://", "#")):
                 assert (path.parent / target.split("#", 1)[0]).is_file(), (name, target)
+
+
+def test_cli_rejects_soc_mismatch_before_optimization(tmp_path, monkeypatch):
+    from microgrid_dispatch import __main__ as cli
+
+    csv_path = tmp_path / "input.csv"
+    config_path = tmp_path / "battery.json"
+    _write_valid_cli_csv(csv_path)
+    config_path.write_text(
+        '{"initial_soc_kwh": 6000, "terminal_soc_kwh": 5000}', encoding="utf-8"
+    )
+    called = False
+
+    def unexpected_optimize(*args, **kwargs):
+        nonlocal called
+        called = True
+        raise AssertionError("optimizer must not run for a baseline SOC conflict")
+
+    monkeypatch.setattr(cli, "optimize_day", unexpected_optimize)
+    with pytest.raises(ValueError, match=r"initial_soc_kwh.*6000.*terminal_soc_kwh.*5000"):
+        cli.main(["--input", str(csv_path), "--battery-config", str(config_path)])
+    assert not called
+
+
+def test_cli_keeps_battery_soc_boundary_validation_before_optimization(tmp_path, monkeypatch):
+    from microgrid_dispatch import __main__ as cli
+
+    csv_path = tmp_path / "input.csv"
+    config_path = tmp_path / "battery.json"
+    _write_valid_cli_csv(csv_path)
+    config_path.write_text(
+        '{"initial_soc_kwh": 11000, "terminal_soc_kwh": 11000}', encoding="utf-8"
+    )
+    monkeypatch.setattr(
+        cli, "optimize_day", lambda *args, **kwargs: pytest.fail("optimizer was called")
+    )
+    with pytest.raises(ValueError, match="Initial SOC is outside storage bounds"):
+        cli.main(["--input", str(csv_path), "--battery-config", str(config_path)])
+
+
+def test_cli_entrypoint_formats_missing_csv_error(tmp_path, capsys):
+    from microgrid_dispatch.__main__ import cli
+
+    missing = tmp_path / "missing.csv"
+    with pytest.raises(SystemExit) as exc_info:
+        cli(["--input", str(missing)])
+    assert exc_info.value.code == 2
+    err = capsys.readouterr().err
+    assert str(missing) in err and "CSV" in err and "check" in err.lower()
+    assert "Traceback" not in err
+
+
+def test_cli_entrypoint_formats_csv_read_errors_with_path(tmp_path, capsys):
+    from microgrid_dispatch.__main__ import cli
+
+    csv_path = tmp_path / "csv-directory"
+    csv_path.mkdir()
+    with pytest.raises(SystemExit):
+        cli(["--input", str(csv_path)])
+    err = capsys.readouterr().err
+    assert str(csv_path) in err and "read" in err.lower()
+    assert "Traceback" not in err
+
+
+def test_cli_entrypoint_formats_csv_encoding_errors(tmp_path, capsys):
+    from microgrid_dispatch.__main__ import cli
+
+    csv_path = tmp_path / "invalid.csv"
+    csv_path.write_bytes(b"\xff")
+    with pytest.raises(SystemExit):
+        cli(["--input", str(csv_path)])
+    err = capsys.readouterr().err
+    assert str(csv_path) in err and "UTF-8" in err
+    assert "Traceback" not in err
+
+
+def test_cli_entrypoint_formats_missing_battery_json_with_path(tmp_path, capsys):
+    from microgrid_dispatch.__main__ import cli
+
+    csv_path = tmp_path / "input.csv"
+    _write_valid_cli_csv(csv_path)
+    missing = tmp_path / "missing.json"
+    with pytest.raises(SystemExit):
+        cli(["--input", str(csv_path), "--battery-config", str(missing)])
+    err = capsys.readouterr().err
+    assert str(missing) in err and "JSON" in err and "check" in err.lower()
+    assert "Traceback" not in err
+
+
+@pytest.mark.parametrize(
+    ("config_text", "expected"),
+    [
+        ('{"max_power_kw": 1, "max_power_kw": 2}', "duplicate.*max_power_kw"),
+        ('{"unknown_parameter": 1}', "Unknown battery config parameter"),
+        ('{"max_power_kw": -1}', "Power limit and interval duration must be positive"),
+    ],
+)
+def test_cli_entrypoint_formats_battery_config_errors(tmp_path, capsys, config_text, expected):
+    from microgrid_dispatch.__main__ import cli
+
+    csv_path = tmp_path / "input.csv"
+    _write_valid_cli_csv(csv_path)
+    config = tmp_path / "battery.json"
+    config.write_text(config_text, encoding="utf-8")
+    with pytest.raises(SystemExit):
+        cli(["--input", str(csv_path), "--battery-config", str(config)])
+    err = capsys.readouterr().err
+    assert str(config) in err
+    assert __import__("re").search(expected, err)
+    assert "Traceback" not in err
+
+
+def test_cli_entrypoint_formats_csv_structure_error_with_path(tmp_path, capsys):
+    from microgrid_dispatch.__main__ import cli
+
+    csv_path = tmp_path / "bad-structure.csv"
+    csv_path.write_text("time,load\n0,1\n", encoding="utf-8")
+    with pytest.raises(SystemExit):
+        cli(["--input", str(csv_path)])
+    err = capsys.readouterr().err
+    assert str(csv_path) in err and "columns" in err
+    assert "Traceback" not in err
+
+
+def test_cli_entrypoint_json_syntax_error_includes_path_line_and_column(tmp_path, capsys):
+    from microgrid_dispatch.__main__ import cli
+
+    csv_path = tmp_path / "input.csv"
+    _write_valid_cli_csv(csv_path)
+    config = tmp_path / "battery.json"
+    config.write_text('{\n  "max_power_kw": }\n', encoding="utf-8")
+    with pytest.raises(SystemExit):
+        cli(["--input", str(csv_path), "--battery-config", str(config)])
+    err = capsys.readouterr().err
+    assert str(config) in err and "line 2" in err and "column" in err
+    assert "Traceback" not in err
+
+
+def test_cli_entrypoint_formats_output_directory_creation_error(tmp_path, capsys):
+    from microgrid_dispatch.__main__ import cli
+
+    csv_path = tmp_path / "input.csv"
+    _write_valid_cli_csv(csv_path)
+    output_path = tmp_path / "not-a-directory"
+    output_path.write_text("file", encoding="utf-8")
+    with pytest.raises(SystemExit):
+        cli(["--input", str(csv_path), "--output-dir", str(output_path)])
+    err = capsys.readouterr().err
+    assert str(output_path) in err and "output" in err.lower()
+    assert "Traceback" not in err
+
+
+def test_cli_entrypoint_formats_dispatch_write_error_with_file_path(tmp_path, capsys):
+    from microgrid_dispatch.__main__ import cli
+
+    csv_path = tmp_path / "input.csv"
+    _write_valid_cli_csv(csv_path)
+    output_dir = tmp_path / "output"
+    output_dir.mkdir()
+    dispatch_path = output_dir / "dispatch.csv"
+    dispatch_path.mkdir()
+    with pytest.raises(SystemExit):
+        cli(["--input", str(csv_path), "--output-dir", str(output_dir)])
+    err = capsys.readouterr().err
+    assert str(dispatch_path) in err and "write" in err.lower()
+    assert "Traceback" not in err
+
+
+def test_cli_entrypoint_formats_summary_write_error_with_file_path(tmp_path, capsys):
+    from microgrid_dispatch.__main__ import cli
+
+    csv_path = tmp_path / "input.csv"
+    _write_valid_cli_csv(csv_path)
+    output_dir = tmp_path / "output"
+    output_dir.mkdir()
+    summary_path = output_dir / "summary.json"
+    summary_path.mkdir()
+    with pytest.raises(SystemExit):
+        cli(["--input", str(csv_path), "--output-dir", str(output_dir)])
+    err = capsys.readouterr().err
+    assert str(summary_path) in err and "write" in err.lower()
+    assert "Traceback" not in err
+
+
+@pytest.mark.parametrize(
+    ("message", "expected"),
+    [
+        ("MILP solve failed: the model is infeasible under supplied inputs (status 2): infeasible", "status 2"),
+        ("MILP solve failed: the solver reached an iteration or time limit (status 1): time limit", "status 1"),
+    ],
+)
+def test_cli_entrypoint_formats_known_solver_failures(tmp_path, monkeypatch, capsys, message, expected):
+    from microgrid_dispatch import __main__ as cli
+
+    csv_path = tmp_path / "input.csv"
+    _write_valid_cli_csv(csv_path)
+
+    def fail(*args, **kwargs):
+        raise RuntimeError(message)
+
+    monkeypatch.setattr(cli, "optimize_day", fail)
+    with pytest.raises(SystemExit):
+        cli.cli(["--input", str(csv_path)])
+    err = capsys.readouterr().err
+    assert expected in err and "MILP solve failed" in err
+    assert "Traceback" not in err
+
+
+def test_cli_entrypoint_does_not_hide_unexpected_runtime_error(tmp_path, monkeypatch, capsys):
+    from microgrid_dispatch import __main__ as cli
+
+    csv_path = tmp_path / "input.csv"
+    _write_valid_cli_csv(csv_path)
+    unexpected = RuntimeError("unexpected programming failure")
+
+    def fail(*args, **kwargs):
+        raise unexpected
+
+    monkeypatch.setattr(cli, "optimize_day", fail)
+    with pytest.raises(RuntimeError, match="unexpected programming failure"):
+        cli.cli(["--input", str(csv_path)])
+    assert capsys.readouterr().err == ""
+
+
+def test_console_script_points_to_user_facing_error_wrapper():
+    from pathlib import Path
+
+    pyproject = (Path(__file__).resolve().parents[1] / "pyproject.toml").read_text(encoding="utf-8")
+    assert 'microgrid_dispatch.__main__:cli' in pyproject
+
+
+def test_result_interpretation_guides_cover_output_fields_and_links():
+    from pathlib import Path
+    import re
+
+    root = Path(__file__).resolve().parents[1]
+    fields = (
+        "start_minute", "end_minute", "load_kwh", "pv_kwh", "price_per_kwh",
+        "purchase_kwh", "charge_kwh", "discharge_kwh", "curtailed_pv_kwh",
+        "soc_start_kwh", "soc_end_kwh", "baseline_purchase_kwh",
+        "optimized_cost", "battery_disabled_baseline_cost", "simulated_cost_difference",
+        "simulated_cost_reduction_percent", "optimized_purchases_kwh", "baseline_purchases_kwh",
+        "solver_mip_gap", "solver_message", "constraints", "disclaimer",
+        "max_balance_residual_kwh", "max_soc_residual_kwh", "max_constraint_violation",
+        "simultaneous_charge_discharge_slots", "min_soc_kwh", "max_soc_kwh",
+    )
+    for name in ("docs/result_interpretation.md", "docs/result_interpretation_zh.md"):
+        path = root / name
+        guide = path.read_text(encoding="utf-8")
+        assert all(f"`{field}`" in guide for field in fields)
+        for target in re.findall(r"\]\(([^)]+)\)", guide):
+            if not target.startswith(("https://", "http://", "#")):
+                assert (path.parent / target.split("#", 1)[0]).is_file(), (name, target)
+
+
+def test_entry_documents_link_result_interpretation():
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    assert "docs/result_interpretation.md" in (root / "README.md").read_text(encoding="utf-8")
+    assert "docs/result_interpretation_zh.md" in (root / "START_HERE_中文.md").read_text(encoding="utf-8")
+
+
+def test_result_interpretation_explains_cost_and_constraint_limits():
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    en = (root / "docs/result_interpretation.md").read_text(encoding="utf-8").lower()
+    zh = (root / "docs/result_interpretation_zh.md").read_text(encoding="utf-8")
+    assert "interval purchase cost" in en and "price_per_kwh" in en
+    assert "null" in en
+    assert "per interval in kwh" in en and "not power in kw" in en
+    assert "\u76f4\u63a5\u4f9b\u8d1f\u8377" in zh and "\u7535\u6c60\u5145\u7535" in zh
+    assert "simultaneous_charge_discharge_slots" in en
+    assert "\u5355\u4e00\u5355\u4f4d" in zh and "kwh" in zh
+
+
+def test_cli_keeps_existing_output_schemas(tmp_path):
+    from pathlib import Path
+    import csv
+    import json
+    from microgrid_dispatch.__main__ import main
+
+    root = Path(__file__).resolve().parents[1]
+    output = tmp_path / "output"
+    main(["--input", str(root / "examples" / "synthetic_day.csv"), "--output-dir", str(output)])
+    with (output / "dispatch.csv").open(newline="", encoding="utf-8") as file:
+        header = next(csv.reader(file))
+    assert header == [
+        "start_minute", "end_minute", "load_kwh", "pv_kwh", "price_per_kwh",
+        "purchase_kwh", "charge_kwh", "discharge_kwh", "curtailed_pv_kwh",
+        "soc_start_kwh", "soc_end_kwh", "baseline_purchase_kwh",
+    ]
+    summary = json.loads((output / "summary.json").read_text(encoding="utf-8"))
+    assert set(summary) == {
+        "scope", "unit", "algorithm", "optimized_cost", "battery_disabled_baseline_cost",
+        "simulated_cost_difference", "simulated_cost_reduction_percent",
+        "optimized_purchases_kwh", "baseline_purchases_kwh", "solver_mip_gap",
+        "solver_message", "constraints", "disclaimer",
+    }
